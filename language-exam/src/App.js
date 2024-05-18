@@ -11,6 +11,7 @@ import {
   Paper,
   CircularProgress,
   CssBaseline,
+  Tooltip,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { ThemeProvider } from "@mui/material/styles"; // No change here
@@ -212,9 +213,12 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container>
-        <div className="project-name" variant="h4" gutterBottom>
-          FluentFlow
-        </div>
+        <Tooltip title="designed by (Zayn) Zihan Huang" arrow>
+          <div className="project-name" variant="h4" gutterBottom>
+            FluentFlow
+          </div>
+        </Tooltip>
+
         <div className="start-button">
           {!quizStarted && !showResults && (
             <Button variant="contained" color="primary" onClick={startQuiz}>
