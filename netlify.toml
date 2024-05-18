@@ -1,4 +1,4 @@
 [build]
 base = "language-exam"
 command = "npm run build"
-publish = "language-exam/build"
+publish = "build"
