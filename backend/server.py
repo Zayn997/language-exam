@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, resources={r"/*": {"origins": "https://main--fluentflowenglish.netlify.app"}})
+
 
 # Set your OpenAI API key here
 openai.api_key = os.getenv('OPENAI_API_KEY')

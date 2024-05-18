@@ -35,6 +35,7 @@ const CustomPaper = styled(Paper)(({ theme }) => ({
 const CustomFormControlLabel = styled(FormControlLabel)(({ theme }) => ({
   fontFamily: "'Poetsen One', sans-serif",
 }));
+const apiUrl = process.env.REACT_APP_API_URL; //new
 
 const TOTAL_QUESTIONS = 20;
 const TIME_LIMIT = 480; // 5 minutes in seconds
@@ -77,7 +78,7 @@ function App() {
       const prompt =
         "Create a language question with options and the correct answer. Format: 'Question: ..., Options: a) ..., b) ..., c) ..., d) ..., Correct Answer: ...', no extra words or explanation just show this question";
       const response = await axios.post(
-        "http://localhost:5000/generate-question",
+        `${apiUrl}/generate-question`, //"http://localhost:5000/generate-question"
         { prompt }
       );
       const resultString = response.data.content;
