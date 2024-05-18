@@ -85,3 +85,7 @@ button {
   font-family: "Poetsen One", sans-serif;
   font-style: normal;
 }
+
+.start-button {
+  margin-top: 100px;
+}
