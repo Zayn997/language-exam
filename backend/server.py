@@ -7,13 +7,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-# CORS(app)
-CORS(app, resources={r"/*": {"origins": "https://main--fluentflowenglish.netlify.app"}})
+CORS(app)
+# CORS(app, resources={r"/*": {"origins": "https://main--fluentflowenglish.netlify.app"}})
 
 
 # Set your OpenAI API key here
 openai.api_key = os.getenv('OPENAI_API_KEY')
 print("OpenAI API Key:", os.getenv('OPENAI_API_KEY'))
+
+@app.route('/')
+def index():
+    return "Welcome to the AI exam"
 
 @app.route('/generate-question', methods=['POST'])
 def generate_question():

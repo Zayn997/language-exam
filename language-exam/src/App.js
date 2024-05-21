@@ -10,19 +10,28 @@ import {
   Container,
   Paper,
   CircularProgress,
+  LinearProgress,
   CssBaseline,
   Tooltip,
+  Box,
+  Select,
+  MenuItem,
+  InputLabel,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { ThemeProvider } from "@mui/material/styles"; // No change here
-import Rating from "@mui/lab/Rating"; // Import Rating component
-import { styled } from "@mui/system"; // Import styled from @mui/system
-import theme from "./theme"; // Import the custom theme
+import { ThemeProvider } from "@mui/material/styles";
+import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
+import Rating from "@mui/material/Rating";
+import { styled } from "@mui/system";
+import theme from "./theme";
+import Character from "./character";
 import "./App.css";
 
 // Define custom styles using the styled API
 const QuestionText = styled(Typography)(({ theme }) => ({
   fontFamily: "'Poetsen One', sans-serif",
+  color: "#ffffff",
 }));
 
 const CustomPaper = styled(Paper)(({ theme }) => ({
@@ -34,10 +43,12 @@ const CustomPaper = styled(Paper)(({ theme }) => ({
 
 const CustomFormControlLabel = styled(FormControlLabel)(({ theme }) => ({
   fontFamily: "'Poetsen One', sans-serif",
+  color: "#ffffff",
 }));
-const apiUrl = process.env.REACT_APP_API_URL; //new
 
-const TOTAL_QUESTIONS = 20;
+const apiUrl = "https://3016-68-81-204-54.ngrok-free.app";
+
+const TOTAL_QUESTIONS = 10;
 const TIME_LIMIT = 480; // 5 minutes in seconds
 
 function App() {
@@ -54,6 +65,7 @@ function App() {
   const [results, setResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [ratings, setRatings] = useState({});
+  const [difficulty, setDifficulty] = useState("TOEFL Basic");
 
   useEffect(() => {
     let timer;
@@ -72,19 +84,20 @@ function App() {
     generateQuestion();
   };
 
+  const correctRate =
+    results.length > 0
+      ? (results.filter((r) => r.isCorrect).length / results.length) * 100
+      : 0;
+
   const generateQuestion = async () => {
     setLoading(true);
     try {
-      const prompt =
-        "Create a language question with options and the correct answer. Format: 'Question: ..., Options: a) ..., b) ..., c) ..., d) ..., Correct Answer: ...', no extra words or explanation just show this question";
-      const response = await axios.post(
-        `${apiUrl}/generate-question`, //"http://localhost:5000/generate-question"
-        { prompt }
-      );
+      const prompt = `Create a ${difficulty.toLowerCase()} language question with options and the correct answer. Format: 'Question: ..., Options: a) ..., b) ..., c) ..., d) ..., Correct Answer: ...', no extra words or explanation just show this question`;
+      const response = await axios.post(`${apiUrl}/generate-question`, {
+        prompt,
+      });
       const resultString = response.data.content;
-      console.log("Response data:", resultString); // Debug log
 
-      // Extracting the fields from the response string
       const questionMatch = resultString.match(/Question: (.+?)\sOptions:/);
       const optionsMatch = resultString.match(
         /Options: (.+?)\sCorrect Answer:/
@@ -97,10 +110,6 @@ function App() {
           .split(", ")
           .map((opt) => opt.replace(/,\s*$/, "").trim());
         const CorrectAnswer = correctAnswerMatch[1].trim();
-
-        console.log("Parsed Question:", Question); // Debug log
-        console.log("Parsed Options:", Options); // Debug log
-        console.log("Parsed Correct Answer:", CorrectAnswer); // Debug log
 
         setQuestion(Question);
         setOptions(Options);
@@ -136,11 +145,11 @@ function App() {
     } else {
       handleSubmitExam();
     }
-    if (isCorrect) {
-      setFeedback("Correct!");
-    } else {
-      setFeedback(`Incorrect. The correct answer is ${correctAnswer}.`);
-    }
+    setFeedback(
+      isCorrect
+        ? "Correct!"
+        : `Incorrect. The correct answer is ${correctAnswer}.`
+    );
   };
 
   const handleSkip = () => {
@@ -165,6 +174,10 @@ function App() {
   const handleSubmitExam = () => {
     setShowResults(true);
     setQuizStarted(false);
+  };
+
+  const handleEndQuiz = () => {
+    handleSubmitExam();
   };
 
   const handleRestart = () => {
@@ -219,6 +232,22 @@ function App() {
             FluentFlow
           </div>
         </Tooltip>
+        <Character />
+        <FormControl className="levels" fullWidth>
+          <InputLabel id="difficulty-label">Difficulty</InputLabel>
+          <Select
+            labelId="difficulty-label"
+            id="difficulty"
+            value={difficulty}
+            label="Difficulty"
+            onChange={(e) => setDifficulty(e.target.value)}
+          >
+            <MenuItem value="TOEFL Basic">TOEFL Basic</MenuItem>
+            <MenuItem value="TOEFL Advanced">TOEFL Advanced</MenuItem>
+            <MenuItem value="TOEFL Professional">TOEFL Professional</MenuItem>
+            <MenuItem value="TOEFL Native">TOEFL Native</MenuItem>
+          </Select>
+        </FormControl>
 
         <div className="start-button">
           {!quizStarted && !showResults && (
@@ -239,7 +268,21 @@ function App() {
               Question {questionsAnswered + 1} of {TOTAL_QUESTIONS}
             </Typography>
             {loading ? (
-              <CircularProgress />
+              <>
+                <LinearProgress
+                // variant="buffer"
+                // value={(questionsAnswered / TOTAL_QUESTIONS) * 100}
+                // valueBuffer={
+                //   ((questionsAnswered + 1) / TOTAL_QUESTIONS) * 100
+                // }
+                />
+                <Stack spacing={1}>
+                  <Skeleton variant="text" sx={{ fontSize: "1rem" }} />
+                  <Skeleton variant="circular" width={40} height={40} />
+                  <Skeleton variant="rectangular" width={210} height={60} />
+                  <Skeleton variant="rounded" width={210} height={60} />
+                </Stack>
+              </>
             ) : (
               <CustomPaper elevation={3}>
                 <QuestionText variant="h6">{question}</QuestionText>
@@ -272,6 +315,17 @@ function App() {
                       >
                         Skip Question
                       </Button>
+                      <Button
+                        variant="contained"
+                        onClick={handleEndQuiz}
+                        style={{
+                          marginLeft: "8px",
+                          backgroundColor: "#757575",
+                          color: "#ffffff",
+                        }}
+                      >
+                        End Quiz
+                      </Button>
                     </div>
                   </FormControl>
                 </form>
@@ -295,6 +349,27 @@ function App() {
             <Typography variant="h4" gutterBottom>
               Quiz Results
             </Typography>
+            <Box position="relative" display="inline-flex">
+              <CircularProgress variant="determinate" value={correctRate} />
+              <Box
+                top={0}
+                left={0}
+                bottom={0}
+                right={0}
+                position="absolute"
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <Typography
+                  variant="caption"
+                  component="div"
+                  color="textSecondary"
+                >
+                  {`${Math.round(correctRate)}%`}
+                </Typography>
+              </Box>
+            </Box>
             <div style={{ height: 400, width: "100%" }}>
               <DataGrid
                 rows={results}
